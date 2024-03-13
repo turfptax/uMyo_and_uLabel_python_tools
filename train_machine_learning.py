@@ -16,7 +16,7 @@ def evaluate_model(y_true, y_pred):
     print(f'Mean Squared Error: {mse}')
     print(f'Mean Absolute Error: {mae}')
     
-datafile = 'uMyo_uLabel_Recording_6_20240307_215927.csv'
+datafile = 'uMyo_uLabel_Recording_7_20240307_222520.csv'
 data = pd.read_csv(f'training_data/{datafile}')
 
 print(f'Training Model from {datafile}')
@@ -50,4 +50,14 @@ y_pred = model.predict(X_test)
 # Evaluate the model
 evaluate_model(y_test, y_pred)
 
+# Create a new DataFrame with the actual and predicted labels
+result_df = y_test.copy().reset_index(drop=True)
+result_df.columns = ['Actual uLable 0', 'Actual uLable 1', 'Actual uLable 2', 'Actual uLable 3','Actual uLable 4', 'LASK_time']
+result_df['Predicted uLable 0'] = y_pred[:, 0]
+result_df['Predicted uLable 1'] = y_pred[:, 1]
+result_df['Predicted uLable 2'] = y_pred[:, 2]
+result_df['Predicted uLable 3'] = y_pred[:, 3]
+result_df['Predicted uLable 4'] = y_pred[:, 4]
 
+# Save the DataFrame as a CSV file
+result_df.to_csv('predictions_vs_actuals.csv', index=False)

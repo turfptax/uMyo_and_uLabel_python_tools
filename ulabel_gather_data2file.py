@@ -63,6 +63,7 @@ def get_file_number_and_timestamp(directory):
     return file_number, timestamp
 
 def get_ulabel_data(ulabel_data):
+    global start_time
     # Return a sample list of uLabel data
     attribute_names = ['uid', 'batt', 'hall_values', 'Qsg','zeroQ','ax','ay','az','dev_yaw','dev_pitch','dev_roll']
     data = {}
@@ -70,15 +71,16 @@ def get_ulabel_data(ulabel_data):
         # Use getattr to get the value, with a default value if the attribute does not exist
         value = getattr(ulabel_data, name, 'Attribute not found')
         data[name] = value
-    print('uLabel',data)
+    #print('uLabel',data)
     ordered = ['1',data['hall_values'][0],data['hall_values'][1],data['hall_values'][2],data['hall_values'][3],data['hall_values'][4],
-            data['ax'],data['ay'],data['az'],data['dev_yaw'],data['dev_pitch'],data['dev_roll'],time.time()]
-    print(ordered)
-    print('------------------')
+            data['ax'],data['ay'],data['az'],data['dev_yaw'],data['dev_pitch'],data['dev_roll'],time.time()-start_time]
+    #print(ordered)
+    #print('------------------')
     return ordered
 
 
 def get_umyo_data(umyo_data):
+    global start_time
     # Return a sample list of uMyo data for each device
     attribute_names = ['uid', 'batt', 'data_array','device_spectr', 'Qsg','zeroQ','ax','ay','az','dev_yaw','dev_pitch','dev_roll','mag_angle']
     uMyos = []
@@ -91,7 +93,7 @@ def get_umyo_data(umyo_data):
         d = data['data_array']
         ds = data['device_spectr']
         ordered = [f'{zz}',d[0],d[1],d[2],d[3],d[4],d[5],d[6],d[7],ds[0],ds[1],ds[2],ds[3],
-                data['ax'],data['ay'],data['az'],data['dev_yaw'],data['dev_pitch'],data['dev_roll'],time.time()]
+                data['ax'],data['ay'],data['az'],data['dev_yaw'],data['dev_pitch'],data['dev_roll'],time.time()-start_time]
         uMyos.append(ordered)
     return uMyos
 
@@ -105,10 +107,34 @@ def append_to_csv(file_name,ulabel_data, umyo_data):
                             f'uM{i} ax',f'uM{i} ay',f'uM{i} az',f'uM{i} dev_yaw',f'uM{i} dev_pitch',f'uM{i} dev_roll',f'uM{i} Timestamp'])
         writer.writerow(headers) if file.tell() == 0 else None  # Write headers if file is empty
         row_data = ulabel_data
-        print('umo_data_csv',umyo_data)
+        #print('umo_data_csv',umyo_data)
         for i in umyo_data:
             row_data.extend(i)
         writer.writerow(row_data)
+
+def write_to_csv(file_name):
+    global recording_data
+    for zzz in recording_data:
+        with open(file_name, 'a', newline='') as file:
+            writer = csv.writer(file)
+            # Construct dynamic headers based on the number of uMyo devices
+            headers = ['uLabel','h1','h2','h3','h4','h5','ax','ay','az','uL dev_yaw','uL dev_pitch','uL dev_roll','uL Timestamp']
+            for i in range(1, 5):
+                headers.extend([f'uMyo{i}',f'uM{i} d1',f'uM{i} d2',f'uM{i} d3',f'uM{i} d4',f'uM{i} d5',f'uM{i} d6',f'uM{i} d7',f'uM{i} d8',f'uM{i} ds1',f'uM{i} ds2',f'uM{i} ds3',f'uM{i} ds4',
+                                f'uM{i} ax',f'uM{i} ay',f'uM{i} az',f'uM{i} dev_yaw',f'uM{i} dev_pitch',f'uM{i} dev_roll',f'uM{i} Timestamp'])
+            writer.writerow(headers) if file.tell() == 0 else None  # Write headers if file is empty
+            writer.writerow(zzz)
+
+
+def append_to_object(file_name,ulabel_data,umyo_data):
+    global recording_data
+    global loop_time
+    line = ulabel_data
+    for i in umyo_data:
+        line.extend(i)
+    recording_data.append(line)
+
+    
 
 
 print("conn: " + ser.portstr)
@@ -118,7 +144,8 @@ parse_unproc_cnt = 0
 uML_Data = []
 data = []
 
-
+recording_data = []
+loop_time = time.time()
 
 #USER DEFINED VARIABLES
 SUBFOLDER = 'training_data'
@@ -129,7 +156,7 @@ FILE_NAME = f"{SUBFOLDER}/uMyo_uLabel_Recording_{file_number}_{timestamp}.csv"
 print("Training will start now. Please follow the on-screen instructions.")
 
 # Set the duration of the loop in seconds
-duration = 30  # For example, 5 minutes
+duration = 20  # For example, 5 minutes
 
 
 start_time = time.time()  # Record the start time
@@ -159,8 +186,7 @@ while(time.time() - start_time < duration):
             # gather data and write to csv file
             ulabel_data = get_ulabel_data(ulabel_list[0])
             umyo_data = get_umyo_data(umyo_parser.umyo_get_list())
-            append_to_csv(FILE_NAME,ulabel_data,umyo_data)
-            
+            append_to_object(FILE_NAME,ulabel_data,umyo_data)
         dat_id = ulabel_display.plot_prepare(ulabel_parser.ulabel_get_list())
         d_diff = 0
         if(not (dat_id is None)):
@@ -170,4 +196,6 @@ while(time.time() - start_time < duration):
             #ulabel_display.plot_cycle_tester()
             last_data_upd = dat_id
 
+write_to_csv(FILE_NAME)
 print("Training completed.")
+
