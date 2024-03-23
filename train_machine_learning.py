@@ -8,7 +8,8 @@ from sklearn.metrics import accuracy_score
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.multioutput import MultiOutputRegressor
 from sklearn.metrics import mean_squared_error, mean_absolute_error
-
+'''uM1 ds1	uM1 ds2	uM1 ds3	uM1 ds4
+'''
 def evaluate_model(y_true, y_pred):
     mse = mean_squared_error(y_true, y_pred)
     mae = mean_absolute_error(y_true, y_pred)
@@ -16,14 +17,14 @@ def evaluate_model(y_true, y_pred):
     print(f'Mean Squared Error: {mse}')
     print(f'Mean Absolute Error: {mae}')
     
-datafile = 'uMyo_uLabel_Recording_7_20240307_222520.csv'
+datafile = 'uMyo_uLabel_Recording_14_20240323_003917-Test-Crop-save.csv'
 data = pd.read_csv(f'training_data/{datafile}')
 
 print(f'Training Model from {datafile}')
 
-input_features = ['uM1 d1','uM1 d2','uM1 d3','uM1 d4','uM1 d5','uM1 d6','uM1 d7','uM1 d8','uM1 Timestamp',
-                  'uM2 d1','uM2 d2','uM2 d3','uM2 d4','uM2 d5','uM2 d6','uM2 d7','uM2 d8','uM2 Timestamp',
-                  'uM3 d1','uM3 d2','uM3 d3','uM3 d4','uM3 d5','uM3 d6','uM3 d7','uM3 d8','uM3 Timestamp']
+input_features = ['uM1 ds1','uM1 ds2','uM1 ds3','uM1 ds4','uM1 Timestamp',
+                  'uM2 ds1','uM2 ds2','uM2 ds3','uM2 ds4','uM2 Timestamp',
+                  'uM3 ds1','uM3 ds2','uM3 ds3','uM3 ds4','uM3 Timestamp',]
 X = data[input_features]
 input_labels = ['h1','h2','h3','h4','h5','uL Timestamp']
 y = data[input_labels]

@@ -73,7 +73,7 @@ def get_ulabel_data(ulabel_data):
         value = getattr(ulabel_data, name, 'Attribute not found')
         data[name] = value
     #print('uLabel',data)
-    ordered = ['1',data['hall_values'][0],data['hall_values'][1],data['hall_values'][2],data['hall_values'][3],data['hall_values'][4],
+    ordered = [data['uid'],data['hall_values'][0],data['hall_values'][1],data['hall_values'][2],data['hall_values'][3],data['hall_values'][4],
             data['ax'],data['ay'],data['az'],data['dev_yaw'],data['dev_pitch'],data['dev_roll'],time.time()-start_time]
     #print(ordered)
     #print('------------------')
@@ -93,7 +93,7 @@ def get_umyo_data(umyo_data):
             data[name] = value
         d = data['data_array']
         ds = data['device_spectr']
-        ordered = [f'{zz}',d[0],d[1],d[2],d[3],d[4],d[5],d[6],d[7],ds[0],ds[1],ds[2],ds[3],
+        ordered = [data['uid'],d[0],d[1],d[2],d[3],d[4],d[5],d[6],d[7],ds[0],ds[1],ds[2],ds[3],
                 data['ax'],data['ay'],data['az'],data['dev_yaw'],data['dev_pitch'],data['dev_roll'],time.time()-start_time]
         uMyos.append(ordered)
     return uMyos
@@ -157,7 +157,7 @@ FILE_NAME = f"{SUBFOLDER}/uMyo_uLabel_Recording_{file_number}_{timestamp}.csv"
 print("Training will start now. Please follow the on-screen instructions.")
 
 # Set the duration of the loop in seconds
-duration = 20  # For example, 5 minutes
+duration = 300  # For example, 5 minutes
 
 
 start_time = time.time()  # Record the start time
@@ -179,11 +179,10 @@ while(time.time() - start_time < duration):
         parse_unproc_cnt = parse_preprocessor(data)
         umyo_list = umyo_parser.umyo_get_list()
         if(len(umyo_list) > 0):
-                print("uMyo: ", umyo_parser.umyo_get_list()[0].data_array[4])      
+                print("len(umyo_list): ", len(umyo_parser.umyo_get_list()))      
         ulabel_list = ulabel_parser.ulabel_get_list()
         if(len(ulabel_list) > 0):
-            print("vals: ")
-            print(ulabel_list[0].hall_values)
+            # print(ulabel_list[0].hall_values)
             # gather data and write to csv file
             ulabel_data = get_ulabel_data(ulabel_list[0])
             umyo_data = get_umyo_data(umyo_parser.umyo_get_list())
@@ -193,7 +192,7 @@ while(time.time() - start_time < duration):
         if(not (dat_id is None)):
             d_diff = dat_id - last_data_upd
         if(d_diff > 2 + cnt_corr):
-           #display_stuff.plot_cycle_lines()
+            #display_stuff.plot_cycle_lines()
             #ulabel_display.plot_cycle_tester()
             last_data_upd = dat_id
 
